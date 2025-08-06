@@ -1,0 +1,97 @@
+6,,,,,""
+"Base Coat - P63",,,,,""
+"Universal Dye Stains -S61",,,,,""
+"S64 Stains",,,,,""
+"Pigmented Conversion Varnish",,,,,""
+"Chroma-Chem 844 Industrial Colorants",,,,,""
+"Sherwood Glazes S66",,,,,""
+"Page","Number","Label","Rex","Density","Cost"
+1,1,"Black","P63B1",.8687,0
+1,2,"Orange","P63E2",.914,0
+1,3,"Green","P63G3",.87,0
+1,4,"Blue","P63L4",.865,0
+1,5,"Burnt Umber","P63N5",.914,0
+1,6,"Scarlet","P63R6",.886,0
+1,7,"Quin Red","P63R7",.9023,0
+1,8,"White","P63W9",1.114,0
+1,9,"Brite Yellow","P63Y10",.876,0
+1,10,"Ferrite Yellow","P63Y11",1.019,0
+1,11,"Vinyl Sealer","T67F3",.875,0
+1,12,"Vinyl Sealer","T67F5",.93,0
+1,13,"Reducer","R6KH21",.9479,0
+1,14,"Butyl Acetate","R6k9",.7897,0
+1,15,"MAK","R6K30",.8137,0
+1,16,"Reducer 305","R7KH38",.799,0
+1,17,"Red Oxide","P636R8",1.0066,0
+2,1,"Black","S61B500",1.041,0
+2,2,"Orange","S61E501",1.037,0
+2,3,"Red","S61R503",1.037,0
+2,4,"Yellow","S61Y504",1.043,0
+2,5,"Blue","S61L505",1.018,0
+2,6,"Bordeaux","S61R506",.985,0
+2,7,"Brite Yellow","N/A",.838,0
+2,8,"Brown","S61N502",1.037,0
+2,9,"PM Reducer","R6K34",.9167,0
+2,10,"Acetone","R6K9",.7972,0
+2,11,"MEK","R6K10",.80615,0
+2,12,"B Acetate","R6H18",.874,0
+2,13,"Water","Water",1,0
+2,14,"Buyl Cell","R6K25",.899,0
+2,15,"Ethanol","R6K21",.789,0
+3,1,"Black","S64B30",.9191,0
+3,2,"Green","S64G38",.908,0
+3,3,"Blue","S64L39",.897,0
+3,4,"Fruitwood","S64N23",1.093,0
+3,5,"Gilsonite","S64N44",.851,0
+3,6,"Burnt Sienna","S64N36",1.157,0
+3,7,"Burnt Umber","S64N37",1.157,0
+3,8,"Raw Umber","S64N42",1.121,0
+3,9,"Red Oxide","S64R33",1.181,0
+3,10,"Deep Red","S64R35",.851,0
+3,11,"Brite Red","S64R40",.89,0
+3,12,"Clear","S64T28",.906,0
+3,13,"White","S64W31",1.597,0
+3,14,"Yellow Oxide","S64Y32",1.171,0
+3,15,"Brite Yellow","S64Y41",.908,0
+3,16,"Raw Sienna","S64Y46",1.13,0
+3,17,"VanDyke Brown","S64N45",.95,0
+3,18,"VM&P Naptha","R1K3",.742,0
+3,19,"Mineral Spirit","R1K4",.76,0
+3,20,"Solvent 142","",.778,0
+3,23,"Cordovan","S64R15",.853,0
+4,1,"Gloss White","H66W31",1.125,0
+4,2,"Low Gloss White","H66W32",1.14,0
+4,3,"Gloss Black","H66B21",.982,0
+4,4,"Low Gloss Black","H66B22",1,0
+4,5,"Green","H66G23",.987,0
+4,6,"Blue","H66L24",.989,0
+4,7,"Red Oxide","H66R25",1.011,0
+4,8,"Organic Red","H66R26",.985,0
+4,9,"Yellow Oxide","H66Y29",1.058,0
+4,10,"Organic Yellow","H66Y30",.995,0
+5,1,"Titanium White","844",1.893,0
+5,2,"Quin Red","844",.995,0
+5,3,"Orange","844",1.989,0
+5,4,"Organic Orange","844",1.018,0
+5,5,"Red Oxide YS","844",1.809,0
+5,6,"Red Oxide BS","844",1.941,0
+5,7,"Burnt Umber","844",1.438,0
+5,8,"Yellow Oxide","844",1.605,0
+5,9,"Chrome Yellow Med","844",2.061,0
+5,10,"Organic Yellow YS","844",1.15,0
+5,11,"Organic Yellow BS","844",1.078,0
+5,12,"Pthalo Green","844",1.0545,0
+5,13,"Pthalo Blue GS","844",.983,0
+5,14,"Pthalo Blue RS","844",.9467,0
+5,15,"Quin Violet","844",.9467,0
+5,16,"Jet Black","844",1.054,0
+6,1,"Natural","S66T10",1.0054,0
+6,2,"Van Dyke Brown","S66N11",.9047,0
+6,3,"White","S66W12",1.027,0
+1,18,"MEK","R6K10",.80615,0
+1,19,"Clear Crackle","T75TH5",.923,0
+3,21,"Clear wiping stain","S64T8",.810055866,0
+3,22,"Aliphatic Naphtha","R1K140",.789409764,0
+3,21,"Denatured Alcohol","D. A.",.806,0
+1,20,"OK-412","OK-412",2.05,0
+3,21,"Lacquer Thinner","R7K119",.797,0

@@ -1,0 +1,228 @@
+ %% PLEASE DO NOT MODIFY OR DELETE THIS FILE! %% 
+ %% This file contains information about the installation of an application. %% 
+ %% It will be used to automatically remove all application components from your computer if you choose to do so. %% 
+
+
+NOTE: Beginning of the bootstrapper section
+
+*** ERROR: Unable to create a directory named 'C:'
+*** DURING THIS ACTION: CreateDir: "C:"
+
+CONFIG: Title: "Sherwin-Williams Sherwood StainWare"
+
+*** ERROR: Unable to create a directory named 'C:'
+*** DURING THIS ACTION: CreateDir: "C:"
+
+*** ERROR: Unable to create a directory named 'C:'
+*** DURING THIS ACTION: CreateDir: "C:"
+
+ACTION: RegKey: "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion", "SharedDLLs"
+
+ACTION: SystemFile: "C:\WINDOWS\system32\VB6STKIT.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\COMCAT.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\MSVCRT40.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\ASYCFILT.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\OLEPRO32.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\OLEAUT32.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\STDOLE2.TLB"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\SYSTEM32\MSVBVM60.DLL"
+(File currently on disk was already up to date)
+
+ACTION: DllSelfRegister: "C:\WINDOWS\SYSTEM32\COMCAT.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\SYSTEM32\OLEPRO32.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\SYSTEM32\OLEAUT32.DLL"
+
+ACTION: TLBRegister: "C:\WINDOWS\SYSTEM32\STDOLE2.TLB"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\SYSTEM32\MSVBVM60.DLL"
+
+NOTE: End of the bootstrapper section
+
+NOTE: Now spawning the main Setup program 'Setup1.exe'....
+
+ACTION: CreateDir: "C:\Program Files\StainWare"
+
+ACTION: CreateDir: "C:\Documents and Settings\Jason M\Start Menu\Programs\Sherwin-Willams Co."
+
+ACTION: PrivateFile: "C:\Program Files\StainWare\Formula.csv"
+(File was not found or was an older version -- new file copied)
+
+ACTION: PrivateFile: "C:\Program Files\StainWare\dwc.wmf"
+(File was not found or was an older version -- new file copied)
+
+ACTION: PrivateFile: "C:\Program Files\StainWare\swlogo.tif"
+(File was not found or was an older version -- new file copied)
+
+ACTION: PrivateFile: "C:\Program Files\StainWare\StainFormulas.mdb"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSSTDFMT.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSBIND.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\VB5DB.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\MSREPL35.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\MSRD2X35.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\expsrv.dll"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\VBAJET32.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\MSJINT35.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\MSJTER35.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SystemFile: "C:\WINDOWS\system32\MSJET35.DLL"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\Program Files\Common Files\Microsoft Shared\DAO\DAO350.DLL"
+(File currently on disk was already up to date)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSHFLXGD.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSADODC.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\COMCT332.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSDATLST.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSDATGRD.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSMASK32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSCOMM32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\SYSINFO.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\PICCLP32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MCI32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSMAPI32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSWINSCK.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSCHRT20.OCX"
+(File was not found or was an older version -- new file copied)
+
+NOTE: The file 'RICHED32.DLL' was not copied because it is intended for use under Windows 95 only. It is not needed under Windows NT 3.51 or 4.0.
+
+ACTION: SharedFile: "C:\WINDOWS\system32\richtx32.ocx"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSINET.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSCOMCT2.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSCOMCTL.OCX"
+(File currently on disk was already up to date)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\COMDLG32.OCX"
+(File currently on disk was already up to date)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\MSFLXGRD.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: SharedFile: "C:\WINDOWS\system32\TABCTL32.OCX"
+(File was not found or was an older version -- new file copied)
+
+ACTION: PrivateFile: "C:\Program Files\StainWare\Wood Stain.exe"
+(File was not found or was an older version -- new file copied)
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSSTDFMT.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSBIND.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSRD2X35.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSJET35.DLL"
+
+ACTION: DllSelfRegister: "C:\Program Files\Common Files\Microsoft Shared\DAO\DAO350.DLL"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSHFLXGD.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSADODC.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\COMCT332.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSDATLST.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSDATGRD.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSMASK32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSCOMM32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\SYSINFO.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\PICCLP32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MCI32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSMAPI32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSWINSCK.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSCHRT20.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\richtx32.ocx"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSINET.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSCOMCT2.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSCOMCTL.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\COMDLG32.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\MSFLXGRD.OCX"
+
+ACTION: DllSelfRegister: "C:\WINDOWS\system32\TABCTL32.OCX"
+
+ACTION: ShellLink: "Sherwin-Willams Co.", "StainWare"
+
+ACTION: RegKey: "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion", "App Paths\Wood Stain.exe"
+
+ACTION: RegValue: "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Wood Stain.exe", ""
+
