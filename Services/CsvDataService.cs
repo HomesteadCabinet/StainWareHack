@@ -101,8 +101,41 @@ public class CsvDataService
 
         if (totalOriginalGrams <= 0) return calculations;
 
-        // Calculate the scaling factor
-        var scalingFactor = batchSize / totalOriginalGrams;
+        // Determine scaling based on target type. For volume targets (gallons/ounces),
+        // account for each ingredient's density to compute the original formula volume.
+        double scalingFactor;
+        switch (batchType)
+        {
+            case BatchType.Grams:
+                // Scale by mass
+                scalingFactor = batchSize / totalOriginalGrams;
+                break;
+            case BatchType.Gallons:
+                // Convert each ingredient's grams to gallons using its density, then sum
+                // gallons = grams / (density * 3785.41)
+                var originalGallons = ingredients.Sum(i =>
+                    (i.Density > 0 ? i.Grams / (i.Density * 3785.41) : i.Grams / 3785.41));
+                if (originalGallons <= 0) return calculations;
+                scalingFactor = batchSize / originalGallons;
+                break;
+            case BatchType.Ounces:
+                // Convert each ingredient's grams to fluid ounces using its density, then sum
+                // fl oz = grams / (density * 29.5735)
+                var originalOunces = ingredients.Sum(i =>
+                    (i.Density > 0 ? i.Grams / (i.Density * 29.5735) : i.Grams / 29.5735));
+                if (originalOunces <= 0) return calculations;
+                scalingFactor = batchSize / originalOunces;
+                break;
+            case BatchType.Lbs:
+                // Scale by weight using legacy conversion grams per lb (kept for parity)
+                var originalLbs = totalOriginalGrams / 456.0;
+                if (originalLbs <= 0) return calculations;
+                scalingFactor = batchSize / originalLbs;
+                break;
+            default:
+                scalingFactor = 1.0;
+                break;
+        }
 
         foreach (var ingredient in ingredients)
         {
@@ -110,9 +143,10 @@ public class CsvDataService
             {
                 Ingredient = ingredient,
                 OriginalGrams = ingredient.Grams,
-                CalculatedAmount = ingredient.Grams * scalingFactor,
+                CalculatedAmount = ingredient.Grams * scalingFactor, // Scale based on proportion
                 BatchType = batchType,
-                BatchSize = batchSize
+                BatchSize = batchSize,
+                Unit = batchType.ToString()
             };
 
             calculations.Add(calculation);

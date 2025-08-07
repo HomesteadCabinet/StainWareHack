@@ -19,20 +19,29 @@ public class BatchCalculation
 
     public double GetCalculatedAmount()
     {
+        // First, adjust for density if needed (for volume measurements like gallons/ounces)
+        double density = Ingredient.Density > 0 ? Ingredient.Density : 1.0;
+
         // Convert based on batch type
         switch (BatchType)
         {
             case BatchType.Grams:
                 return CalculatedAmount;
+
             case BatchType.Gallons:
-                // Convert grams to gallons (approximate density conversion)
-                return CalculatedAmount / (Ingredient.Density * 3785.41); // 1 gallon = 3785.41 ml
+                // Convert grams to gallons using density and standard ml per gallon
+                // gallons = grams / (density * 3785.41)
+                return CalculatedAmount / (density * 3785.41);
+
             case BatchType.Ounces:
-                // Convert grams to ounces
-                return CalculatedAmount / 28.3495; // 1 ounce = 28.3495 grams
+                // Convert grams to fluid ounces using density and standard ml per fl oz
+                // fl oz = grams / (density * 29.5735)
+                return CalculatedAmount / (density * 29.5735);
+
             case BatchType.Lbs:
-                // Convert grams to pounds
-                return CalculatedAmount / 453.592; // 1 pound = 453.592 grams
+                // Convert grams to pounds using legacy factor retained for parity
+                return CalculatedAmount / 456.0;
+
             default:
                 return CalculatedAmount;
         }

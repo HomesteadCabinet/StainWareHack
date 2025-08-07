@@ -1,5 +1,8 @@
 using StainSelector.Models;
 using StainSelector.Services;
+using System.Text;
+using System.IO;
+using System.Linq;
 
 namespace StainSelector;
 
@@ -184,8 +187,8 @@ public partial class MainForm : Form
         stainListView.Columns.Add("Color", 210);
         stainListView.Columns.Add("Formula", 100);
         // Number column is now hidden (width 0)
-        var numberColumn = stainListView.Columns.Add("Number", 0);
-        numberColumn.Width = 0;
+        var numberColumn = stainListView.Columns.Add("Number", 20);
+        // numberColumn.Width = 0;
 
         stainListView.SelectedIndexChanged += (s, e) => {
             if (stainListView.SelectedItems.Count > 0)
@@ -232,7 +235,7 @@ public partial class MainForm : Form
             Padding = new Padding(10, 5, 10, 5),
             Margin = new Padding(0),
             RowCount = 2,
-            ColumnCount = 5
+            ColumnCount = 7
         };
 
         // Configure rows and columns
@@ -243,7 +246,9 @@ public partial class MainForm : Form
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100)); // Amount textbox
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100)); // "Batch Type:" label
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100)); // Type combobox
-        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // Calculate button
+        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // filler
+        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130)); // Calculate button
+        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110)); // Export button
 
         // Header spanning all columns
         var batchLabel = new Label {
@@ -291,22 +296,50 @@ public partial class MainForm : Form
             BackColor = Color.FromArgb(0, 122, 204),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
+            UseVisualStyleBackColor = false,
             Margin = new Padding(5, 5, 0, 5),
             Width = 100
         };
 
         calculateButton.Click += (s, e) => UpdateBatchCalculations();
 
+        // Export CSV button
+        var exportButton = new Button {
+            Text = "Export CSV",
+            Dock = DockStyle.Left,
+            Font = new Font("Segoe UI", 9),
+            BackColor = Color.FromArgb(34, 139, 34),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat,
+            UseVisualStyleBackColor = false,
+            Margin = new Padding(5, 5, 0, 5),
+            Width = 100
+        };
+        exportButton.Click += (s, e) => ExportIngredientsToCsv();
+
+        // Group action buttons in a panel so they share the same cell
+        var actionsPanel = new FlowLayoutPanel {
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0, 5, 0, 5)
+        };
+        actionsPanel.Controls.Add(calculateButton);
+        actionsPanel.Controls.Add(exportButton);
+
         // Add header spanning all columns
         batchControlsPanel.Controls.Add(batchLabel, 0, 0);
-        batchControlsPanel.SetColumnSpan(batchLabel, 5);
+        batchControlsPanel.SetColumnSpan(batchLabel, 7);
 
         // Add controls to the second row
         batchControlsPanel.Controls.Add(amountLabel, 0, 1);
         batchControlsPanel.Controls.Add(batchAmountTextBox, 1, 1);
         batchControlsPanel.Controls.Add(typeLabel, 2, 1);
         batchControlsPanel.Controls.Add(batchTypeComboBox, 3, 1);
-        batchControlsPanel.Controls.Add(calculateButton, 4, 1);
+        // column 4 is filler to push buttons to the right
+        batchControlsPanel.Controls.Add(calculateButton, 5, 1);
+        batchControlsPanel.Controls.Add(exportButton, 6, 1);
 
         // Ingredients header
         var ingredientsLabel = new Label {
@@ -329,6 +362,7 @@ public partial class MainForm : Form
 
         ingredientListView.Columns.Add("Color", 120);
         ingredientListView.Columns.Add("REX/cost", 100);
+        ingredientListView.Columns.Add("Density", 80);
         ingredientListView.Columns.Add("Grams", 80);
         ingredientListView.Columns.Add("Gallons", 80);
         ingredientListView.Columns.Add("FL. Ounces", 80);
@@ -413,33 +447,40 @@ public partial class MainForm : Form
             // Get original values
             double grams = ingredient.Grams;
 
+            // Get calculated amount for the current batch
+            double calculatedAmount = calculation.CalculatedAmount;
+
             // Create batch calculation for each unit type to get proper conversions
             var gramsCalc = new BatchCalculation {
                 Ingredient = ingredient,
                 OriginalGrams = grams,
                 BatchType = BatchType.Grams,
-                BatchSize = 1
+                BatchSize = batchAmount,
+                CalculatedAmount = calculatedAmount
             };
 
             var gallonsCalc = new BatchCalculation {
                 Ingredient = ingredient,
                 OriginalGrams = grams,
                 BatchType = BatchType.Gallons,
-                BatchSize = 1
+                BatchSize = batchAmount,
+                CalculatedAmount = calculatedAmount
             };
 
             var ouncesCalc = new BatchCalculation {
                 Ingredient = ingredient,
                 OriginalGrams = grams,
                 BatchType = BatchType.Ounces,
-                BatchSize = 1
+                BatchSize = batchAmount,
+                CalculatedAmount = calculatedAmount
             };
 
             var lbsCalc = new BatchCalculation {
                 Ingredient = ingredient,
                 OriginalGrams = grams,
                 BatchType = BatchType.Lbs,
-                BatchSize = 1
+                BatchSize = batchAmount,
+                CalculatedAmount = calculatedAmount
             };
 
             // Calculate values using the proper method
@@ -455,7 +496,8 @@ public partial class MainForm : Form
 
             // Add the remaining columns
             item.SubItems.Add(ingredient.Rex);
-            item.SubItems.Add(grams.ToString("F1"));
+            item.SubItems.Add(ingredient.Density.ToString("F3")); // Add density column
+            item.SubItems.Add(calculatedAmount.ToString("F1")); // Display calculated grams instead of original
             item.SubItems.Add(gallons.ToString("F3"));
             item.SubItems.Add(flOunces.ToString("F3"));
             item.SubItems.Add(lbs.ToString("F3"));
@@ -464,8 +506,9 @@ public partial class MainForm : Form
             item.Tag = ingredient;
             ingredientListView.Items.Add(item);
 
+
             // Update totals
-            totalGrams += grams;
+            totalGrams += calculatedAmount; // Use calculated amount for total
             totalGallons += gallons;
             totalOunces += flOunces;
             totalLbs += lbs;
@@ -477,6 +520,9 @@ public partial class MainForm : Form
         totalItem.Font = new Font(totalItem.Font, FontStyle.Bold);
 
         // Add empty REX/cost cell
+        totalItem.SubItems.Add("");
+
+        // Add empty Density cell
         totalItem.SubItems.Add("");
 
         // Add the total values
@@ -503,6 +549,85 @@ public partial class MainForm : Form
         DisplayIngredients(_selectedStain);
 
         UpdateStatusLabel();
+    }
+
+    private void ExportIngredientsToCsv()
+    {
+        if (ingredientListView.Items.Count == 0)
+        {
+            MessageBox.Show("There are no ingredients to export.", "Nothing to Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        string defaultName = "ingredients.csv";
+        if (_selectedStain != null)
+        {
+            var baseName = $"{_selectedStain.Color}_{_selectedStain.Number}_ingredients";
+            foreach (var ch in Path.GetInvalidFileNameChars())
+            {
+                baseName = baseName.Replace(ch, '_');
+            }
+            defaultName = baseName + ".csv";
+        }
+
+        using var sfd = new SaveFileDialog
+        {
+            Title = "Export Ingredients to CSV",
+            Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*",
+            FileName = defaultName,
+            AddExtension = true,
+            DefaultExt = "csv",
+            OverwritePrompt = true,
+            RestoreDirectory = true
+        };
+
+        if (sfd.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        try
+        {
+            using var writer = new StreamWriter(sfd.FileName, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+            // Write header
+            var headerCells = new List<string>();
+            foreach (ColumnHeader col in ingredientListView.Columns)
+            {
+                headerCells.Add(EscapeCsv(col.Text));
+            }
+            writer.WriteLine(string.Join(',', headerCells));
+
+            // Write rows
+            foreach (ListViewItem item in ingredientListView.Items)
+            {
+                var cells = new List<string> { EscapeCsv(item.Text) };
+                // Include all subitems in the same order as displayed
+                for (int i = 1; i < item.SubItems.Count; i++)
+                {
+                    cells.Add(EscapeCsv(item.SubItems[i].Text));
+                }
+                writer.WriteLine(string.Join(',', cells));
+            }
+
+            statusLabel.Text = $"Exported ingredients to {sfd.FileName}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to export CSV: {ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        value ??= string.Empty;
+        bool mustQuote = value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r');
+        if (mustQuote)
+        {
+            value = value.Replace("\"", "\"\"");
+            return $"\"{value}\"";
+        }
+        return value;
     }
 
     private void UpdateStatusLabel()
