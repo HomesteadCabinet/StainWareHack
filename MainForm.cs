@@ -3,6 +3,7 @@ using StainSelector.Services;
 using System.Text;
 using System.IO;
 using System.Linq;
+using System.Drawing.Printing;
 
 namespace StainSelector;
 
@@ -18,9 +19,8 @@ public partial class MainForm : Form
     private ListView stainListView = null!;
     private ListView ingredientListView = null!;
     private TextBox searchTextBox = null!;
-    private TextBox batchAmountTextBox = null!;
+    private NumericUpDown batchAmountNumeric = null!;
     private ComboBox batchTypeComboBox = null!;
-    private Button calculateButton = null!;
     private Label statusLabel = null!;
 
 
@@ -141,7 +141,7 @@ public partial class MainForm : Form
 
         // Search label
         var searchLabel = new Label {
-            Text = "Search Stains:",
+            Text = "Search Finishes:",
             ForeColor = Color.White,
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
             Dock = DockStyle.Fill,
@@ -167,7 +167,7 @@ public partial class MainForm : Form
 
         // Stains list header
         var stainsLabel = new Label {
-            Text = "Available Stains",
+            Text = "Available Finishes",
             Font = new Font("Segoe UI", 12, FontStyle.Bold),
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
@@ -180,15 +180,15 @@ public partial class MainForm : Form
             View = View.Details,
             FullRowSelect = true,
             GridLines = true,
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 11),
             HeaderStyle = ColumnHeaderStyle.Nonclickable
         };
 
         stainListView.Columns.Add("Color", 210);
         stainListView.Columns.Add("Formula", 100);
         // Number column is now hidden (width 0)
-        var numberColumn = stainListView.Columns.Add("Number", 20);
-        // numberColumn.Width = 0;
+        var numberColumn = stainListView.Columns.Add("Number", 0);
+        numberColumn.Width = 0;
 
         stainListView.SelectedIndexChanged += (s, e) => {
             if (stainListView.SelectedItems.Count > 0)
@@ -247,8 +247,8 @@ public partial class MainForm : Form
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100)); // "Batch Type:" label
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100)); // Type combobox
         batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); // filler
-        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130)); // Calculate button
-        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110)); // Export button
+        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200)); // Print button
+        batchControlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 35)); // Export icon button
 
         // Header spanning all columns
         var batchLabel = new Label {
@@ -265,12 +265,17 @@ public partial class MainForm : Form
             TextAlign = ContentAlignment.MiddleLeft
         };
 
-        batchAmountTextBox = new TextBox {
+        batchAmountNumeric = new NumericUpDown {
             Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI", 9),
-            Text = "1",
-            Margin = new Padding(0, 5, 5, 5)
+            Font = new Font("Segoe UI", 11),
+            Margin = new Padding(0, 5, 5, 5),
+            Minimum = 0,
+            Maximum = 1000,
+            DecimalPlaces = 3,
+            Increment = 0.5M,
+            Value = 1
         };
+        batchAmountNumeric.ValueChanged += (s, e) => UpdateBatchCalculations();
 
         var typeLabel = new Label {
             Text = "Batch Type:",
@@ -281,52 +286,44 @@ public partial class MainForm : Form
 
         batchTypeComboBox = new ComboBox {
             Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 11),
             DropDownStyle = ComboBoxStyle.DropDownList,
             Margin = new Padding(0, 5, 5, 5)
         };
 
         batchTypeComboBox.Items.AddRange(new object[] { "Grams", "Gallons", "Ounces", "Lbs" });
         batchTypeComboBox.SelectedIndex = 1;
-
-        calculateButton = new Button {
-            Text = "Calculate Batch",
-            Dock = DockStyle.Left,
-            Font = new Font("Segoe UI", 9),
-            BackColor = Color.FromArgb(0, 122, 204),
-            ForeColor = Color.White,
-            FlatStyle = FlatStyle.Flat,
-            UseVisualStyleBackColor = false,
-            Margin = new Padding(5, 5, 0, 5),
-            Width = 100
-        };
-
-        calculateButton.Click += (s, e) => UpdateBatchCalculations();
+        batchTypeComboBox.SelectedIndexChanged += (s, e) => UpdateBatchCalculations();
 
         // Export CSV button
         var exportButton = new Button {
-            Text = "Export CSV",
-            Dock = DockStyle.Left,
-            Font = new Font("Segoe UI", 9),
-            BackColor = Color.FromArgb(34, 139, 34),
+            Text = "⭳",
+            Font = new Font("Segoe UI Symbol", 18, FontStyle.Bold),
+            BackColor = Color.FromArgb(134, 189, 134),
             ForeColor = Color.White,
-            FlatStyle = FlatStyle.Flat,
+            FlatStyle = FlatStyle.Popup,
             UseVisualStyleBackColor = false,
             Margin = new Padding(5, 5, 0, 5),
-            Width = 100
+            Width = 30,
+            Height = 30
         };
         exportButton.Click += (s, e) => ExportIngredientsToCsv();
+        var exportToolTip = new ToolTip();
+        exportToolTip.SetToolTip(exportButton, "Export CSV");
 
-        // Group action buttons in a panel so they share the same cell
-        var actionsPanel = new FlowLayoutPanel {
-            Dock = DockStyle.Fill,
-            AutoSize = false,
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            Margin = new Padding(0, 5, 0, 5)
+        // Print Label button
+        var printButton = new Button {
+            Text = "Print Label",
+            Dock = DockStyle.Left,
+            Font = new Font("Segoe UI", 11, FontStyle.Bold),
+            BackColor = Color.FromArgb(255, 140, 0),
+            ForeColor = Color.White,
+            FlatStyle = FlatStyle.Popup,
+            UseVisualStyleBackColor = false,
+            Margin = new Padding(5, 5, 20, 5),
+            Width = 200
         };
-        actionsPanel.Controls.Add(calculateButton);
-        actionsPanel.Controls.Add(exportButton);
+        printButton.Click += (s, e) => PrintLabel();
 
         // Add header spanning all columns
         batchControlsPanel.Controls.Add(batchLabel, 0, 0);
@@ -334,11 +331,11 @@ public partial class MainForm : Form
 
         // Add controls to the second row
         batchControlsPanel.Controls.Add(amountLabel, 0, 1);
-        batchControlsPanel.Controls.Add(batchAmountTextBox, 1, 1);
+        batchControlsPanel.Controls.Add(batchAmountNumeric, 1, 1);
         batchControlsPanel.Controls.Add(typeLabel, 2, 1);
         batchControlsPanel.Controls.Add(batchTypeComboBox, 3, 1);
         // column 4 is filler to push buttons to the right
-        batchControlsPanel.Controls.Add(calculateButton, 5, 1);
+        batchControlsPanel.Controls.Add(printButton, 5, 1);
         batchControlsPanel.Controls.Add(exportButton, 6, 1);
 
         // Ingredients header
@@ -356,18 +353,18 @@ public partial class MainForm : Form
             View = View.Details,
             FullRowSelect = true,
             GridLines = true,
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 11),
             HeaderStyle = ColumnHeaderStyle.Nonclickable
         };
 
-        ingredientListView.Columns.Add("Color", 120);
-        ingredientListView.Columns.Add("REX/cost", 100);
-        ingredientListView.Columns.Add("Density", 80);
-        ingredientListView.Columns.Add("Grams", 80);
-        ingredientListView.Columns.Add("Gallons", 80);
-        ingredientListView.Columns.Add("FL. Ounces", 80);
-        ingredientListView.Columns.Add("Lbs.", 80);
-        ingredientListView.Columns.Add("Add", 80);
+        ingredientListView.Columns.Add("Color", 160);
+        ingredientListView.Columns.Add("REX/cost", 140);
+        ingredientListView.Columns.Add("Density", 100);
+        ingredientListView.Columns.Add("Grams", 100);
+        ingredientListView.Columns.Add("Gallons", 100);
+        ingredientListView.Columns.Add("FL. Ounces", 100);
+        ingredientListView.Columns.Add("Lbs.", 100);
+        ingredientListView.Columns.Add("Add", 0);
 
         // Add controls to table layout in order
         tableLayout.Controls.Add(batchControlsPanel, 0, 0);
@@ -390,7 +387,7 @@ public partial class MainForm : Form
         statusLabel = new Label {
             Text = "Ready",
             ForeColor = Color.White,
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 11),
             AutoSize = true,
             Location = new Point(10, 5)
         };
@@ -420,11 +417,7 @@ public partial class MainForm : Form
         var ingredients = _dataService.GetIngredientsForStain(stain);
 
         // Get batch amount and type for calculations
-        double batchAmount = 1.0; // Default to 1
-        if (double.TryParse(batchAmountTextBox.Text, out var amount))
-        {
-            batchAmount = amount;
-        }
+        double batchAmount = (double)batchAmountNumeric.Value;
         var batchType = (BatchType)batchTypeComboBox.SelectedIndex;
 
         // Calculate batch for all ingredients
@@ -516,8 +509,10 @@ public partial class MainForm : Form
         }
 
         // Add the TOTAL row
-        var totalItem = new ListViewItem("Total");
-        totalItem.Font = new Font(totalItem.Font, FontStyle.Bold);
+        var totalItem = new ListViewItem("Total")
+        {
+            Font = new Font("Segoe UI", 11, FontStyle.Bold)
+        };
 
         // Add empty REX/cost cell
         totalItem.SubItems.Add("");
@@ -538,9 +533,10 @@ public partial class MainForm : Form
         private void UpdateBatchCalculations()
     {
         if (_selectedStain == null) return;
-        if (!double.TryParse(batchAmountTextBox.Text, out var batchAmount))
+        var batchAmount = (double)batchAmountNumeric.Value;
+        if (batchAmount <= 0)
         {
-            MessageBox.Show("Please enter a valid batch amount.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Please enter a batch amount greater than 0.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -634,6 +630,216 @@ public partial class MainForm : Form
     {
         var totalStains = _filteredStains.Count;
         var totalIngredients = _selectedStain != null ? _dataService.GetIngredientsForStain(_selectedStain).Count : 0;
-        statusLabel.Text = $"Showing {totalStains} stains. Selected stain has {totalIngredients} ingredients.";
+        statusLabel.Text = $"Showing {totalStains} finishes. Selected stain has {totalIngredients} ingredients.";
+    }
+
+    private void PrintLabel()
+    {
+        if (_selectedStain == null)
+        {
+            MessageBox.Show("Please select a finish first.", "No Stain Selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        if (_currentBatchCalculations == null || _currentBatchCalculations.Count == 0)
+        {
+            MessageBox.Show("Please calculate a batch first.", "No Calculations", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var printDoc = new PrintDocument();
+
+        // Try to set paper to 4x2 inches (units are hundredths of an inch)
+        var desired = new PaperSize("Label 4x2 in", 400, 200);
+        try
+        {
+            // Prefer an existing paper size that matches to avoid printer rejection
+            var sizes = printDoc.PrinterSettings.PaperSizes;
+            var match = sizes.Cast<PaperSize>().FirstOrDefault(ps =>
+                Math.Abs(ps.Width - desired.Width) <= 5 && Math.Abs(ps.Height - desired.Height) <= 5);
+            printDoc.DefaultPageSettings.PaperSize = match ?? desired;
+        }
+        catch
+        {
+            printDoc.DefaultPageSettings.PaperSize = desired;
+        }
+
+        // Tight margins for small label
+        printDoc.DefaultPageSettings.Margins = new Margins(10, 10, 10, 10); // 0.1" margins
+        printDoc.OriginAtMargins = true;
+
+        printDoc.PrintPage += PrintDocument_PrintPage;
+
+        using var dlg = new PrintDialog { UseEXDialog = true, AllowSomePages = false, Document = printDoc };
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            try
+            {
+                printDoc.Print();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to print: {ex.Message}", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    private void PrintDocument_PrintPage(object? sender, PrintPageEventArgs e)
+    {
+        if (_selectedStain is not Stain selected || _currentBatchCalculations == null || _currentBatchCalculations.Count == 0)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        var g = e.Graphics;
+
+        // Fonts sized for 4x2 label
+        using var titleFont = new Font("Segoe UI", 12, FontStyle.Bold);
+        using var subFont = new Font("Segoe UI", 9, FontStyle.Bold);
+        // Dynamic text font to allow shrinking to fit
+        float textFontSize = 9f;
+        Font? textFont = null;
+
+        var bounds = e.MarginBounds;
+        var x = bounds.Left;
+        var y = bounds.Top;
+        var width = bounds.Width;
+
+        var batchType = (BatchType)batchTypeComboBox.SelectedIndex;
+
+        // Header (left) + Batch info (right) on the same line
+        var colorText = selected?.Color ?? string.Empty;
+        var colorSize = g!.MeasureString(colorText, titleFont, width);
+
+        var batchAmountValue = batchAmountNumeric.Value;
+        string batchAmountText = batchAmountValue.ToString();
+        string batchTypeText = ((BatchType)batchTypeComboBox.SelectedIndex).ToString();
+        if (batchAmountValue == 1)
+        {
+            // Singularize by trimming trailing 's' if present
+            if (batchTypeText.EndsWith("s", StringComparison.OrdinalIgnoreCase))
+            {
+                batchTypeText = batchTypeText.Substring(0, batchTypeText.Length - 1);
+            }
+        }
+        string headerBatchInfo = $"Batch: {batchAmountText} {batchTypeText}";
+        var batchInfoSize = g.MeasureString(headerBatchInfo, subFont, width);
+
+        // Draw color on the left
+        g.DrawString(colorText, titleFont, Brushes.Black, new RectangleF(x, y, width, colorSize.Height));
+        // Draw batch info right-aligned
+        g.DrawString(headerBatchInfo, subFont, Brushes.Black,
+            new RectangleF(x, y, width, batchInfoSize.Height), new StringFormat { Alignment = StringAlignment.Far });
+
+        // Advance Y by the max of the two heights
+        int headerLineHeight = (int)Math.Ceiling(Math.Max(colorSize.Height, batchInfoSize.Height));
+        y += headerLineHeight - 2;
+
+        // (Batch info already shown on header line)
+
+        // Divider line
+        y += 2;
+        g.DrawLine(Pens.Black, x, y, x + width, y);
+        y += 4;
+
+        // Table headers (show REX, grams and ounces regardless of selected batch type)
+        int rexColWidth = (int)(width * 0.17);
+        int nameColWidth = (int)(width * 0.47);
+        int gramsColWidth = (int)(width * 0.18);
+        int ouncesColWidth = width - rexColWidth - nameColWidth - gramsColWidth;
+
+        g.DrawString("REX", subFont, Brushes.Black, new RectangleF(x, y, rexColWidth, subFont.Height),
+            new StringFormat { Alignment = StringAlignment.Near });
+        g.DrawString("Ingredients", subFont, Brushes.Black, new RectangleF(x + rexColWidth, y, nameColWidth, subFont.Height));
+        g.DrawString("Grams", subFont, Brushes.Black, new RectangleF(x + rexColWidth + nameColWidth, y, gramsColWidth, subFont.Height),
+            new StringFormat { Alignment = StringAlignment.Far });
+        g.DrawString("Ounces", subFont, Brushes.Black, new RectangleF(x + rexColWidth + nameColWidth + gramsColWidth, y, ouncesColWidth, subFont.Height),
+            new StringFormat { Alignment = StringAlignment.Far });
+        y += subFont.Height + 2;
+
+        // Rows (with dynamic font sizing to fit height)
+        var stringFormat = new StringFormat(StringFormatFlags.NoWrap)
+        {
+            Trimming = StringTrimming.EllipsisCharacter
+        };
+
+        // Determine font size to fit all rows within the available height
+        int calculateProjectedHeight(float candidateFontSize)
+        {
+            using var tmpFont = new Font("Segoe UI", candidateFontSize, FontStyle.Regular);
+            int spacing = candidateFontSize <= 7f ? 0 : 1;
+            int rowHeight = Math.Max(tmpFont.Height, tmpFont.Height);
+            int projected = (subFont.Height + 2); // header row already drawn above; this is row start offset used for consistency
+            projected += _currentBatchCalculations.Count * (rowHeight + spacing);
+            return projected;
+        }
+
+        int availableAfterHeadersY = y; // y is positioned after headers
+        int availableHeight = bounds.Bottom - availableAfterHeadersY - 4; // reserve a tiny bottom padding
+
+        while (true)
+        {
+            if (textFont != null) textFont.Dispose();
+            textFont = new Font("Segoe UI", textFontSize, FontStyle.Regular);
+            int needed = calculateProjectedHeight(textFontSize);
+            if (needed <= availableHeight || textFontSize <= 6f)
+            {
+                break;
+            }
+            textFontSize -= 0.25f; // shrink step
+        }
+
+        int rowSpacing = textFontSize <= 7f ? 0 : 1;
+
+        foreach (var calc in _currentBatchCalculations)
+        {
+            if (calc == null || calc.Ingredient == null)
+            {
+                continue;
+            }
+
+            // Always compute grams and ounces for the label
+            double grams = calc.CalculatedAmount; // CalculatedAmount is in grams (scaled)
+            var ouncesCalc = new BatchCalculation
+            {
+                Ingredient = calc.Ingredient,
+                OriginalGrams = calc.OriginalGrams,
+                CalculatedAmount = grams,
+                BatchType = BatchType.Ounces,
+                BatchSize = calc.BatchSize
+            };
+            double ounces = ouncesCalc.GetCalculatedAmount();
+
+            string rex = calc.Ingredient.Rex;
+            string name = calc.Ingredient.Label;
+            string gramsText = grams.ToString("F1");
+            string ouncesText = ounces.ToString("F3");
+
+            int rowHeight = Math.Max(textFont.Height, textFont.Height);
+
+            // Draw REX
+            g.DrawString(rex, textFont, Brushes.Black, new RectangleF(x, y, rexColWidth - 4, rowHeight),
+                new StringFormat { Alignment = StringAlignment.Near });
+            // Draw Ingredient Name
+            g.DrawString(name, textFont, Brushes.Black, new RectangleF(x + rexColWidth, y, nameColWidth - 6, rowHeight), stringFormat);
+            // Draw Grams
+            g.DrawString(gramsText, textFont, Brushes.Black, new RectangleF(x + rexColWidth + nameColWidth, y, gramsColWidth, rowHeight),
+                new StringFormat { Alignment = StringAlignment.Far });
+            // Draw Ounces
+            g.DrawString(ouncesText, textFont, Brushes.Black, new RectangleF(x + rexColWidth + nameColWidth + gramsColWidth, y, ouncesColWidth, rowHeight),
+                new StringFormat { Alignment = StringAlignment.Far });
+
+            y += rowHeight + rowSpacing;
+
+            if (y > bounds.Bottom - textFont.Height - 2)
+            {
+                break;
+            }
+        }
+
+        textFont?.Dispose();
+
+        e.HasMorePages = false;
     }
 }
