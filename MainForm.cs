@@ -10,6 +10,8 @@ namespace StainSelector;
 public partial class MainForm : Form
 {
     private readonly CsvDataService _dataService;
+    private readonly PortableUpdateManager _updateManager;
+    private readonly UpdateConfigurationService _configService;
     private List<Stain> _allStains = new();
     private List<Stain> _filteredStains = new();
     private Stain? _selectedStain;
@@ -28,7 +30,10 @@ public partial class MainForm : Form
     {
         InitializeComponent();
         _dataService = new CsvDataService();
+        _updateManager = new PortableUpdateManager();
+        _configService = new UpdateConfigurationService();
         LoadDataAsync();
+        CheckForUpdatesOnStartup();
     }
 
     private async void LoadDataAsync()
@@ -59,14 +64,22 @@ public partial class MainForm : Form
         this.StartPosition = FormStartPosition.CenterScreen;
         this.BackColor = Color.FromArgb(240, 240, 240);
 
+        // Create menu bar first
+        CreateMenuBar();
+
         // Create main container with status bar at bottom
+        // Position it below the menu bar by setting Top and adjusting Height
         var mainContainer = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
             RowCount = 2,
             ColumnCount = 1,
             Padding = new Padding(0),
-            Margin = new Padding(0)
+            Margin = new Padding(0),
+            Left = 0,
+            Top = 0, // Will be adjusted after menu bar is created
+            Width = this.ClientSize.Width,
+            Height = this.ClientSize.Height,
+            Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
         };
 
         // Configure rows - content area and status bar
@@ -106,7 +119,53 @@ public partial class MainForm : Form
         mainContainer.Controls.Add(mainSplitContainer, 0, 0);
         mainContainer.Controls.Add(statusPanel, 0, 1);
 
+        // Adjust main container position to account for menu bar
+        if (this.MainMenuStrip != null)
+        {
+            mainContainer.Top = this.MainMenuStrip.Height;
+            mainContainer.Height = this.ClientSize.Height - this.MainMenuStrip.Height;
+        }
+
         this.Controls.Add(mainContainer);
+    }
+
+    private void CreateMenuBar()
+    {
+        var menuStrip = new MenuStrip();
+
+        // File menu
+        var fileMenu = new ToolStripMenuItem("&File");
+        var exitMenuItem = new ToolStripMenuItem("E&xit", null, (s, e) => this.Close());
+        fileMenu.DropDownItems.Add(exitMenuItem);
+        menuStrip.Items.Add(fileMenu);
+
+        // Help menu
+        var helpMenu = new ToolStripMenuItem("&Help");
+        var checkUpdatesMenuItem = new ToolStripMenuItem("Check for &Updates", null, CheckForUpdatesMenuItem_Click);
+        var updateSettingsMenuItem = new ToolStripMenuItem("Update &Settings", null, (s, e) => ShowUpdateSettings());
+        var aboutMenuItem = new ToolStripMenuItem("&About", null, (s, e) => ShowAbout());
+
+        helpMenu.DropDownItems.Add(checkUpdatesMenuItem);
+        helpMenu.DropDownItems.Add(new ToolStripSeparator());
+        helpMenu.DropDownItems.Add(updateSettingsMenuItem);
+        helpMenu.DropDownItems.Add(new ToolStripSeparator());
+        helpMenu.DropDownItems.Add(aboutMenuItem);
+        menuStrip.Items.Add(helpMenu);
+
+        // Set as main menu strip and add to controls
+        this.MainMenuStrip = menuStrip;
+        this.Controls.Add(menuStrip);
+    }
+
+    private void ShowAbout()
+    {
+        var version = PortableUpdateManager.GetCurrentVersion();
+        var aboutText = $"Stain Selector v{version}\n\n" +
+                       "Portable wood stain formula calculator with auto-update capabilities.\n\n" +
+                       "Copyright © 2024 StainWare";
+
+        MessageBox.Show(aboutText, "About Stain Selector",
+            MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     private void CreateLeftPanelControls(Panel panel)
@@ -841,5 +900,60 @@ public partial class MainForm : Form
         textFont?.Dispose();
 
         e.HasMorePages = false;
+    }
+
+    private async void CheckForUpdatesOnStartup()
+    {
+        try
+        {
+            if (_configService.ShouldCheckForUpdates())
+            {
+                var updateInfo = await _updateManager.CheckForUpdatesAsync();
+                if (updateInfo != null && updateInfo.IsUpdateAvailable)
+                {
+                    var dialog = new PortableUpdateDialog(updateInfo);
+                    dialog.ShowDialog(this);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Update check failed: {ex.Message}");
+        }
+    }
+
+    private async void CheckForUpdatesMenuItem_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            statusLabel.Text = "Checking for updates...";
+            var updateInfo = await _updateManager.CheckForUpdatesAsync();
+
+            if (updateInfo != null && updateInfo.IsUpdateAvailable)
+            {
+                var dialog = new PortableUpdateDialog(updateInfo);
+                dialog.ShowDialog(this);
+            }
+            else
+            {
+                MessageBox.Show("No updates available. You are running the latest version.",
+                    "No Updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to check for updates: {ex.Message}",
+                "Update Check Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            UpdateStatusLabel();
+        }
+    }
+
+    private void ShowUpdateSettings()
+    {
+        var settingsForm = new UpdateSettingsDialog(_configService);
+        settingsForm.ShowDialog(this);
     }
 }

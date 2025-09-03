@@ -1,0 +1,11 @@
+# GitHub Deploy Key
+#
+# This file should contain your GitHub deploy key for accessing private repositories.
+#
+# To set up a deploy key:
+# 1. Generate a new SSH key: ssh-keygen -t ed25519 -f deploy_key -C "your-email@example.com"
+# 2. Add the public key to your GitHub repository settings
+# 3. Replace this file content with your private key
+#
+# The key should start with -----BEGIN OPENSSH PRIVATE KEY----- or similar
+# and end with -----END OPENSSH PRIVATE KEY-----

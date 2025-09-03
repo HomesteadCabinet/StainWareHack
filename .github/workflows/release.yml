@@ -1,0 +1,192 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-*'  # Pre-release tags like v1.0.0-beta
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PROJECT_NAME: 'StainSelector'
+
+jobs:
+  create-release:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        $tag = $env:GITHUB_REF -replace 'refs/tags/', ''
+        $version = $tag -replace '^v', ''
+        Write-Host "version=$version" >> $env:GITHUB_OUTPUT
+        Write-Host "tag=$tag" >> $env:GITHUB_OUTPUT
+        Write-Host "Extracted version: $version from tag: $tag"
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build application
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Publish application
+      run: dotnet publish --configuration Release --no-build --output ./publish --self-contained false
+
+    - name: Create portable package
+      run: |
+        # Create dist directory
+        if (-not (Test-Path "dist")) {
+          New-Item -ItemType Directory -Path "dist"
+        }
+
+        $version = "${{ steps.version.outputs.version }}"
+        $packageName = "$env:PROJECT_NAME-$version-portable"
+        $packagePath = "dist/$packageName"
+
+        # Create package directory
+        if (Test-Path $packagePath) {
+          Remove-Item -Path $packagePath -Recurse -Force
+        }
+        New-Item -ItemType Directory -Path $packagePath
+
+        # Copy published files
+        Copy-Item -Path "publish/*" -Destination $packagePath -Recurse
+
+        # Copy additional required files
+        $additionalFiles = @("mdbtools", "WoodStain", "exported_csv", "update.xml")
+        foreach ($file in $additionalFiles) {
+          if (Test-Path $file) {
+            if ((Get-Item $file) -is [System.IO.DirectoryInfo]) {
+              Copy-Item -Path $file -Destination $packagePath -Recurse
+            } else {
+              Copy-Item -Path $file -Destination $packagePath
+            }
+          }
+        }
+
+        # Create README for portable package
+        $readmeContent = @"
+# $env:PROJECT_NAME Portable Package
+
+Version: $version
+Build Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+GitHub Release: ${{ steps.version.outputs.tag }}
+
+## Installation
+1. Extract this ZIP file to your desired location
+2. Run $env:PROJECT_NAME.exe
+
+## Requirements
+- Windows 10/11
+- .NET 9.0 Runtime
+
+## Files Included
+- Main application executable
+- Required dependencies
+- MDB tools for database operations
+- Wood stain data and formulas
+- Update configuration
+
+## Support
+For issues and updates, visit: https://github.com/${{ github.repository }}
+
+## Release Information
+- Version: $version
+- Release Tag: ${{ steps.version.outputs.tag }}
+- Build Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+- Commit: ${{ github.sha }}
+"@
+        $readmeContent | Out-File -FilePath "$packagePath/README.txt" -Encoding UTF8
+
+        # Create ZIP package
+        Compress-Archive -Path "$packagePath/*" -DestinationPath "dist/$packageName.zip" -Force
+
+        # Clean up temporary directory
+        Remove-Item -Path $packagePath -Recurse -Force
+
+        # Output package info
+        Write-Host "Created package: dist/$packageName.zip"
+        $packageSize = (Get-Item "dist/$packageName.zip").Length
+        Write-Host "Package size: $([math]::Round($packageSize / 1MB, 2)) MB"
+
+    - name: Calculate checksum
+      id: checksum
+      run: |
+        $packagePath = "dist/$env:PROJECT_NAME-${{ steps.version.outputs.version }}-portable.zip"
+        $hash = Get-FileHash -Path $packagePath -Algorithm SHA256
+        Write-Host "checksum=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+        Write-Host "SHA256: $($hash.Hash)"
+
+    - name: Update update.xml
+      run: |
+        $version = "${{ steps.version.outputs.version }}"
+        $tag = "${{ steps.version.outputs.tag }}"
+        $checksum = "${{ steps.version.outputs.checksum }}"
+        $packageName = "$env:PROJECT_NAME-$version-portable.zip"
+
+        $updateXml = @"
+<?xml version="1.0" encoding="utf-8"?>
+<update>
+  <version>$version</version>
+  <downloadUrl>https://github.com/${{ github.repository }}/releases/download/$tag/$packageName</downloadUrl>
+  <releaseNotes>https://github.com/${{ github.repository }}/releases/tag/$tag</releaseNotes>
+  <checksum>$checksum</checksum>
+  <size>$((Get-Item "dist/$packageName").Length)</size>
+  <date>$(Get-Date -Format "yyyy-MM-dd")</date>
+</update>
+"@
+        $updateXml | Out-File -FilePath "update.xml" -Encoding UTF8
+        Write-Host "Updated update.xml with version $version"
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: Release ${{ steps.version.outputs.version }}
+        body: |
+          ## StainSelector ${{ steps.version.outputs.version }}
+
+          ### Download
+          - **Portable Package**: `${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-portable.zip`
+
+          ### Installation
+          1. Download the portable package
+          2. Extract to your desired location
+          3. Run `${{ env.PROJECT_NAME }}.exe`
+
+          ### Requirements
+          - Windows 10/11
+          - .NET 9.0 Runtime
+
+          ### Changes
+          See the commit history for detailed changes.
+
+          ### Checksum
+          **SHA256**: `${{ steps.version.outputs.checksum }}`
+
+          ---
+          *This release was automatically generated by GitHub Actions*
+        files: dist/*.zip
+        draft: false
+        prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Commit updated update.xml
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add update.xml
+        git commit -m "Update version to ${{ steps.version.outputs.version }}" || exit 0
+        git push || exit 0
