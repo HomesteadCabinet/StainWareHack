@@ -23,28 +23,16 @@ public class BatchCalculation
         double density = Ingredient.Density > 0 ? Ingredient.Density : 1.0;
 
         // Convert based on batch type
-        switch (BatchType)
+        return BatchType switch
         {
-            case BatchType.Grams:
-                return CalculatedAmount;
-
-            case BatchType.Gallons:
-                // Convert grams to gallons using density and standard ml per gallon
-                // gallons = grams / (density * 3785.41)
-                return CalculatedAmount / (density * 3785.41);
-
-            case BatchType.Ounces:
-                // Convert grams to fluid ounces using density and standard ml per fl oz
-                // fl oz = grams / (density * 29.5735)
-                return CalculatedAmount / (density * 29.5735);
-
-            case BatchType.Lbs:
-                // Convert grams to pounds using legacy factor retained for parity
-                return CalculatedAmount / 456.0;
-
-            default:
-                return CalculatedAmount;
-        }
+            BatchType.Grams => CalculatedAmount,
+            BatchType.Gallons => CalculatedAmount / (density * 3785.41),// Convert grams to gallons using density and standard ml per gallon
+                                                                        // gallons = grams / (density * 3785.41)
+            BatchType.Ounces => CalculatedAmount / (density * 29.5735),// Convert grams to fluid ounces using density and standard ml per fl oz
+                                                                       // fl oz = grams / (density * 29.5735)
+            BatchType.Lbs => CalculatedAmount / 456.0,// Convert grams to pounds using legacy factor retained for parity
+            _ => CalculatedAmount,
+        };
     }
 
     public string GetUnitLabel()
